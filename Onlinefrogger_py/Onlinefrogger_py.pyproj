@@ -44,6 +44,8 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="gui\main.py" />
+    <Compile Include="gui\server.py" />
+    <Compile Include="gui\wating.py" />
     <Compile Include="gui\__init__.py">
       <SubType>Code</SubType>
     </Compile>
