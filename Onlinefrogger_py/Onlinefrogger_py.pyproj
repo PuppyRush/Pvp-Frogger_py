@@ -28,9 +28,16 @@
     <Compile Include="game\Heckler.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="game\Map.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="game\multi\Client.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="game\multi\MessagePacker.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="game\multi\MessageParser.py" />
     <Compile Include="game\multi\Server.py">
       <SubType>Code</SubType>
     </Compile>
@@ -43,9 +50,9 @@
     <Compile Include="game\__init__.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="gui\main.py" />
-    <Compile Include="gui\server.py" />
-    <Compile Include="gui\wating.py" />
+    <Compile Include="gui\Main.py" />
+    <Compile Include="gui\Server.py" />
+    <Compile Include="gui\Watting.py" />
     <Compile Include="gui\__init__.py">
       <SubType>Code</SubType>
     </Compile>

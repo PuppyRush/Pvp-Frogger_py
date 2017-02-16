@@ -78,9 +78,8 @@ app = QtWidgets.QApplication(sys.argv)
 wattingThread = WattingThread()
 ui = Ui_Dialog()
 
-def beginUI(serverSocket):
-  
-    
+def beginUI():
+ 
     wattingThread.isConnect = False
     wattingThread.start()
   
