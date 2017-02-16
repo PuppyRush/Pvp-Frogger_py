@@ -11,6 +11,7 @@ class Order(Enum):
     DOWN=2
     LEFT=3
     RIGHT=4
+    NONE=5
 
 
 class Player(object):
@@ -19,14 +20,16 @@ class Player(object):
 
     '''
     def __init__(self, frogNumber=int, nickname=str,coord=list,idx=list):
+        self.frogNumber = frogNumber
         self.nickname = nickname
         self.idx = idx
         self.position = coord
         self.jumpcount=0
         self.isMoving = False
         self.presentOrder = Order.UP
+        
         self.gap = 30
-        self.now = 0
+        self.now = 0   
 
         file = os.path.join("images", "frog.png")
         _image = pygame.image.load(file)
@@ -34,11 +37,36 @@ class Player(object):
         _image.convert_alpha()
         self.image = _image
         
+    def updateKeyEvent(self,press=list):
+
+        if(self.frogNumber>0):
+            
+            #from getting message
+            #press = pygame.key.get_pressed()
+            pass
+
+        key = Order
+
+        if(press[pygame.K_w] == 1):
+            key = self.move(Player.Order.UP)
+            
+        elif(press[pygame.K_s] == 1):
+            key = self.move(Player.Order.DOWN)
+        elif(press[pygame.K_a] == 1):
+            key = self.move(Player.Order.LEFT)
+        elif(press[pygame.K_d] == 1):
+            key = self.move(Player.Order.RIGHT)
+
+        return key
+
+    def decisionFrog(self,hecklers=[],mapRows=[]):
+        pass
+
         
     def move(self,order=Order):
         
         if not self.isValidMoving(order):
-            return
+            return Order.NONE
         
         if not self.isMoving:    
             self.isMoving = True
@@ -46,7 +74,9 @@ class Player(object):
 
             self.__rotate(self.presentOrder, order)
             self.presentOrder = order
-            
+            return order
+        return Order.NONE
+
     def isValidMoving(self,order=Order):
         if order ==Order.LEFT :
             if self.idx[0]==0:
@@ -59,12 +89,12 @@ class Player(object):
             else:
                 self.idx[0]+=1
         elif order ==Order.UP :
-            if self.idx[1]==0:
+            if self.idx[1]==GA.GameInfo.HEIGHT_COUNT.value-1:
                 return False
             else:
                 self.idx[1]-=1
         elif order ==Order.DOWN :
-            if self.idx[1]==GA.GameInfo.HEIGHT_COUNT.value-1:
+            if self.idx[1]== 0:
                 return False
             else:
                 self.idx[1]+=1

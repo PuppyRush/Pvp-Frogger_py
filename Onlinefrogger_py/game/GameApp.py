@@ -42,7 +42,7 @@ class GameApp(object):
 
     def __init__(self,players=[],level=int,speed=int):
 
-        self.__GAP_OF_FROG = GameInfo.WIDTH_COUNT.value * GameInfo.WIDTH_SIZE.value /(len(players)+1)
+        self.__GAP_OF_FROG = GameInfo.SCREEN_WIDTH_SIZE.value /(len(players)+1)
         self.__level = level
         self.__speed = speed
         self.MAX_HEIGHT_COUNT = GameInfo.HEIGHT_COUNT.value*self.__level*10
@@ -57,9 +57,8 @@ class GameApp(object):
         for i in players:
             x = int((order+1)*GameInfo.WIDTH_COUNT.value/(len(players)+1))
             y = 0
-            self.players.append( game.Player.Player(i[0], i[1], 
-                                                    [ (order+1)*self.__GAP_OF_FROG, GameInfo.HEIGHT_COUNT.value], 
-                                                    [ x,y ]) )
+            self.players.append( game.Player.Player(i[0], i[1], [ (order+1)*self.__GAP_OF_FROG - GameInfo.WIDTH_SIZE.value/2-3, GameInfo.HEIGHT_COUNT.value] , 
+                                                    [ x,y ] ))
             order+=1
           
     def __setMap(self):
@@ -81,22 +80,28 @@ def beginGameApp(playeres=[],level=int,speed=int):
     pygame.init()
     pygame.display.set_caption("FROGGER")
     
+    
     screenBeginIdx=0
     screenEndIdx=29
 
+    startSection = True
+    EndSection = False
+
+    idxGap=0
+
     while True:
-        press = pygame.key.get_pressed()
-        for i in pygame.event.get():
-            if(press[pygame.K_w] == 1):
-                gameApp.players[0].move(Player.Order.UP)
-            elif(press[pygame.K_s] == 1):
-                gameApp.players[0].move(Player.Order.DOWN)
-            elif(press[pygame.K_a] == 1):
-                gameApp.players[0].move(Player.Order.LEFT)
-            elif(press[pygame.K_d] == 1):
-                gameApp.players[0].move(Player.Order.RIGHT)
-                    
-        for i in range(screenBeginIdx,screenEndIdx+1):
+
+        for player in gameApp.players:
+            key = player.updateKeyEvent(pygame.key.get_pressed())
+            if(key == Player.Order.UP):
+                if(startSection==False and EndSection==False):
+                    idxGap+=1
+
+            if(player.idx[1] == GameInfo.SCREEN_HEIGHT_SIZE.value/2):
+                startSection = False
+                EndSection = False
+                     
+        for i in range(screenBeginIdx ,screenEndIdx+1):
 
             for l in range(0,GameInfo.WIDTH_COUNT.value):
                 if(gameApp.map.earth[i].mapKind == Map.MapEnum.ROCK):
@@ -117,7 +122,13 @@ def beginGameApp(playeres=[],level=int,speed=int):
                 SURFACE.blit( l.image, (l.position[0], GameInfo.SCREEN_HEIGHT_SIZE.value - l.position[1]) )
                 l.update(DELTAT)
 
-          
+            #judgetment
+
+                        
+                
+
+            #gameApp.players[0].decisionFrog(gameApp.hecklers[i],gameApp.map.earth[i])
+
 
         pygame.display.flip()
         pygame.display.update()

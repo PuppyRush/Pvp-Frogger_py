@@ -53,7 +53,7 @@ class HecklerFactory(object):
             for i in range(0,count):
                 self.__hecklers.append( Heckler(Kind.LOG , [ i*gap , self.gameInfo.HEIGHT_SIZE.value * self.heightIdx] , direction, self.speed) )
                 
-        elif self.mapKind == Map.MapEnum.SOIL :
+        elif self.mapKind == Map.MapEnum.ROAD :
             count = random.randrange(4,7)
             gap = self.gameInfo.SCREEN_WIDTH_SIZE.value/count
             kind = self.__getSoilHecklerKindRandomly() 
@@ -75,9 +75,6 @@ class HecklerFactory(object):
             kind = Kind.CAR
         return kind
 
-
-        
-
     def getHecklers(self):
         return self.__hecklers
 
@@ -88,16 +85,16 @@ class Heckler(pygame.sprite.Sprite):
         self.speed = Speed[name.name].value+speed
         self.position = position
         self.direction = direction
-        self.image = self.__loadImage(PATH[name],-1)
+        self.image = self.__loadImage(PATH[name])
 
         
 
-    def __loadImage(self,file_name=str, colorkey=False, image_directory='images'):
+    def __loadImage(self,file_name=str, image_directory='images'):
         
         file = os.path.join(image_directory, file_name)
         _image = pygame.image.load(file)
-        _image.set_colorkey((228,0,127))
-        _image.convert_alpha()
+        #_image.set_colorkey((228,0,127))
+        #_image.convert_alpha()
 
         if not self.direction:
             _image = pygame.transform.flip(_image,True,False)
