@@ -1,38 +1,25 @@
-import game.GameApp
-
-import gui.Main , gui.Main, gui.Watting
+import gui.main, gui.wating, gui.server
+import game.multi.Server, game.multi.Client
 import init
-from game.multi import *
-from game import *
-
 
 #initInfo = init.InitInfo()
-
-#game.multi.MessageParser.beginMessageParser()
-#game.multi.MessagePacker.beginMessagePacker()
 
 isServer = True
 ip = ""
 nickname = ""
 
 
-#isServer, nickname, ip = gui.Main.beginUI("localhost")
+isServer, nickname, ip = gui.main.beginUI("localhost")
 
-#if(isServer):
-    
-#    level , speed = gui.Server.beginUI()
+if(isServer):
 
-#    level = int(level)
-#    speed = int(speed)
+    level , speed = gui.server.beginUI()
 
-#    game.multi.Server.beginServerSocket(ip,nickname)      
-#    gui.Watting.beginUI()
+    level = int(level)
+    speed = int(speed)
 
-#else:
-#    game.multi.Client.beginClientSocket(ip,nickname)
+    serverSocket = game.multi.Server.beginServerSocket(ip,nickname)      
+    gui.wating.beginUI(serverSocket)
 
-
-players = [(1,"asd"),(2,"sd")]
-         
-
-game.GameApp.beginGameApp(players,3,0)
+else:
+    clientSocket = game.multi.Client.beginClientSocket(ip,nickname)
