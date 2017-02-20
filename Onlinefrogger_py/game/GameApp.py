@@ -1,4 +1,4 @@
-import turtle
+#import turtle
 import sys
 import pygame
 import math
@@ -6,11 +6,13 @@ import threading
 import time
 import game
 import queue
+import enum
+import random
 from random import Random
 from enum import Enum
 from itertools import chain
 from pygame.locals import *
-from game import Player, Heckler, Map
+from game import Player, Heckler, Map, Controller
 
 if not pygame.font: print("Warning, fonts disabled")
 if not pygame.mixer: print("Warning, sound disabled")
@@ -30,7 +32,7 @@ class GameInfo(Enum):
 BACKGROUND_COLOR = (255,255,255)
 
 CLOCK = pygame.time.Clock()
-DELTAT = CLOCK.tick(60)
+DELTAT = CLOCK.tick(30)
 
 SURFACE = pygame.display.set_mode((GameInfo.WIDTH_COUNT.value*GameInfo.WIDTH_SIZE.value, 
                                    GameInfo.HEIGHT_COUNT.value*GameInfo.HEIGHT_SIZE.value),DOUBLEBUF,32)
@@ -40,12 +42,12 @@ SURFACE.fill(BACKGROUND_COLOR)
 
 class GameApp(object):
 
-    def __init__(self,players=[],level=int,speed=int):
-
+    def __init__(self,ctl=Controller.Controller, players=[],level=int,speed=int,maxHeightCount=int):
+        self.ctl = ctl
         self.__GAP_OF_FROG = GameInfo.WIDTH_COUNT.value * GameInfo.WIDTH_SIZE.value /(len(players)+1)
         self.__level = level
         self.__speed = speed
-        self.MAX_HEIGHT_COUNT = GameInfo.HEIGHT_COUNT.value*self.__level*10
+        self.MAX_HEIGHT_COUNT = maxHeightCount
         self.__setPlayer(players)
         self.__setMap()
         self.__setHecklers()
@@ -57,67 +59,62 @@ class GameApp(object):
         for i in players:
             x = int((order+1)*GameInfo.WIDTH_COUNT.value/(len(players)+1))
             y = 0
-            self.players.append( game.Player.Player(i[0], i[1], 
+            self.players.append( game.Player.Player(self.ctl,i[0], i[1], 
                                                     [ (order+1)*self.__GAP_OF_FROG, GameInfo.HEIGHT_COUNT.value], 
                                                     [ x,y ]) )
             order+=1
           
     def __setMap(self):
         
-        self.map = Map.Map(self.MAX_HEIGHT_COUNT, GameInfo)
+        self.map = Map.Map(self.ctl,self.MAX_HEIGHT_COUNT)
 
     def __setHecklers(self):
         
         self.hecklers = []    
         for i in self.map.earth:
-            self.hecklers.append( Heckler.HecklerFactory( i.mapKind, GameInfo, i.heightIdx ,self.__speed).getHecklers())
+            self.hecklers.append( Heckler.HecklerFactory(self.ctl, i.mapKind, i.heightIdx ,self.__speed).getHecklers())
 
 
 def beginGameApp(playeres=[],level=int,speed=int):
-
     
-    gameApp = GameApp(playeres,level,speed)
-
+    
     pygame.init()
     pygame.display.set_caption("FROGGER")
     
-    screenBeginIdx=0
-    screenEndIdx=29
+    maxHeightCount = Map.Map.getMaxHeightCount(GameInfo.HEIGHT_COUNT.value,level)
 
+    ctl = Controller.Controller(maxHeightCount)
+    gameApp = GameApp(ctl,playeres,level,speed,maxHeightCount)
+    
+    
     while True:
-        press = pygame.key.get_pressed()
-        for i in pygame.event.get():
-            if(press[pygame.K_w] == 1):
-                gameApp.players[0].move(Player.Order.UP)
-            elif(press[pygame.K_s] == 1):
-                gameApp.players[0].move(Player.Order.DOWN)
-            elif(press[pygame.K_a] == 1):
-                gameApp.players[0].move(Player.Order.LEFT)
-            elif(press[pygame.K_d] == 1):
-                gameApp.players[0].move(Player.Order.RIGHT)
-                    
-        for i in range(screenBeginIdx,screenEndIdx+1):
+
+        #preventing to full of queue
+        pygame.event.get()
+
+        for player in gameApp.players:
+            player.updateKeyEvent(pygame.key.get_pressed())
+
+        for i in range(ctl.getLowerScreenIdx(), ctl.getUpperScreenIdx()):
 
             for l in range(0,GameInfo.WIDTH_COUNT.value):
                 if(gameApp.map.earth[i].mapKind == Map.MapEnum.ROCK):
 
                     if(gameApp.map.earth[i].rows[l] == Map.MapEnum.RIVER):
-                        SURFACE.blit( gameApp.map.earth[i].waterImage, ( l*GameInfo.WIDTH_SIZE.value, GameInfo.SCREEN_HEIGHT_SIZE.value - i*GameInfo.HEIGHT_SIZE.value))
+                        SURFACE.blit( gameApp.map.earth[i].waterImage, gameApp.map.getPosition(l,i) )
                     else:
-                        SURFACE.blit( gameApp.map.earth[i].image, ( l*GameInfo.WIDTH_SIZE.value, GameInfo.SCREEN_HEIGHT_SIZE.value - i*GameInfo.HEIGHT_SIZE.value))
+                        SURFACE.blit( gameApp.map.earth[i].image, gameApp.map.getPosition(l,i))
                 else:
-                    SURFACE.blit( gameApp.map.earth[i].image , ( l*GameInfo.WIDTH_SIZE.value, GameInfo.SCREEN_HEIGHT_SIZE.value - i*GameInfo.HEIGHT_SIZE.value))
+                    SURFACE.blit( gameApp.map.earth[i].image , gameApp.map.getPosition(l,i))
             
             for l in gameApp.players:
                 l.update()
-                SURFACE.blit( l.image, (l.position[0], GameInfo.SCREEN_HEIGHT_SIZE.value -  l.position[1]))
+                SURFACE.blit( l.image, l.getPosition(l,i))
 
             hecklers = gameApp.hecklers[i]
             for l in hecklers:
-                SURFACE.blit( l.image, (l.position[0], GameInfo.SCREEN_HEIGHT_SIZE.value - l.position[1]) )
+                SURFACE.blit( l.image, l.getPosition(i))
                 l.update(DELTAT)
-
-          
 
         pygame.display.flip()
         pygame.display.update()
