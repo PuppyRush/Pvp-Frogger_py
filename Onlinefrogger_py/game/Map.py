@@ -1,6 +1,7 @@
 import os
 import pygame
-from game import GameApp
+import game
+from game import GameApp as GA, Controller
 from enum import Enum
 import random
 
@@ -9,7 +10,7 @@ import random
 
 class MapEnum(Enum):
     RIVER=1
-    ROAD=2
+    LOAD=2
     CONCRETE=3
     ROCK=4
 
@@ -17,7 +18,8 @@ PATH = {}
 PATH[MapEnum.CONCRETE] = "concrete.png"
 PATH[MapEnum.RIVER] = "river.png"
 PATH[MapEnum.ROCK] = "rock.png"
-PATH[MapEnum.ROAD] = "road.png"
+PATH[MapEnum.LOAD] = "load.png"
+
 
 
 
@@ -63,16 +65,17 @@ class Map(object):
             return _image
 
 
-    def __init__(self,MAX_HEIGHT_COUNT=int, gameInfo=object):
+    def __init__(self,ctl=object,MAX_HEIGHT_COUNT=int):
+        self.ctl = ctl
+        
         self.earth = []
         self.__MAX_HEIGHT_COUNT = MAX_HEIGHT_COUNT
-        self.__WIDTH_COUNT = gameInfo.WIDTH_COUNT.value
-        self.__HEIGHT_COUNT = gameInfo.HEIGHT_COUNT.value
+        self.__WIDTH_COUNT = ctl.gameInfo.WIDTH_COUNT.value
+        self.__HEIGHT_COUNT = ctl.gameInfo.HEIGHT_COUNT.value
 
         for i in range(0,5):
-            self.earth.append( self.MapRow( MapEnum.CONCRETE,gameInfo.WIDTH_COUNT.value,i))
+            self.earth.append( self.MapRow( MapEnum.CONCRETE,ctl.gameInfo.WIDTH_COUNT.value,i))
         
-
         beginIdx = 5
         isSoil = True
         endIdx=0
@@ -86,16 +89,20 @@ class Map(object):
             
             if(isSoil):
                 for i in range(beginIdx,endIdx):
-                    self.earth.append( self.MapRow( MapEnum.ROAD, gameInfo.WIDTH_COUNT.value,i ))
+                    self.earth.append( self.MapRow( MapEnum.LOAD, ctl.gameInfo.WIDTH_COUNT.value,i ))
             else:
                 for i in range(beginIdx,endIdx):
                     kind = MapEnum.ROCK if random.randrange(0,5)==0 else MapEnum.RIVER
-                    if self.earth[i-1].mapKind == kind:
-                        kind = MapEnum.RIVER
-                    self.earth.append( self.MapRow( kind,gameInfo.WIDTH_COUNT.value,i))
+                    self.earth.append( self.MapRow( kind,ctl.gameInfo.WIDTH_COUNT.value,i))
 
 
             isSoil =not isSoil
             beginIdx = endIdx
 
+    def getPosition(self,x=int,y=int):
+        return (x*self.ctl.gameInfo.WIDTH_SIZE.value, 
+                self.ctl.gameInfo.SCREEN_HEIGHT_SIZE.value+ self.ctl.gameInfo.HEIGHT_SIZE.value*(self.ctl.getGapIdx() - y))
 
+    @staticmethod
+    def getMaxHeightCount(SCREEN_HEIGHT_COUNT=int,leven=int):
+        return SCREEN_HEIGHT_COUNT*leven*10
