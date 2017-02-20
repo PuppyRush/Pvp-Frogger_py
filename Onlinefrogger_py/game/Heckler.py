@@ -3,7 +3,7 @@ import pygame
 import game
 import random
 from enum import Enum
-from game import Map,GameApp
+from game import Map,GameApp as GA, Controller
 from pygame import sprite
 from threading import Timer
 
@@ -34,11 +34,11 @@ PATH[Kind.LOG] = "log.png"
 
 class HecklerFactory(object):
 
-    def __init__(self,mapKind=Map.MapEnum,gameInfo=object,heightIdx=int,speed=int):
+    def __init__(self,controller=Controller.Controller,mapKind=Map.MapEnum,heightIdx=int,speed=int):
+        self.ctl =controller
         self.mapKind = mapKind
         self.heightIdx = heightIdx
         self.speed = speed
-        self.gameInfo = gameInfo
         self.__makeHecklers()
 
     def __makeHecklers(self):
@@ -49,17 +49,17 @@ class HecklerFactory(object):
 
         if(self.mapKind == Map.MapEnum.RIVER):
             count = random.randrange(2,6)
-            gap = self.gameInfo.SCREEN_WIDTH_SIZE.value/count
+            gap = self.ctl.gameInfo.SCREEN_WIDTH_SIZE.value/count
             for i in range(0,count):
-                self.__hecklers.append( Heckler(Kind.LOG , [ i*gap , self.gameInfo.HEIGHT_SIZE.value * self.heightIdx] , direction, self.speed) )
+                self.__hecklers.append( Heckler(self.ctl,Kind.LOG , [ i*gap , self.ctl.gameInfo.HEIGHT_SIZE.value * self.heightIdx] , direction, self.speed) )
                 
-        elif self.mapKind == Map.MapEnum.SOIL :
+        elif self.mapKind == Map.MapEnum.LOAD :
             count = random.randrange(4,7)
-            gap = self.gameInfo.SCREEN_WIDTH_SIZE.value/count
+            gap = self.ctl.gameInfo.SCREEN_WIDTH_SIZE.value/count
             kind = self.__getSoilHecklerKindRandomly() 
             begin = random.randrange(0,50)
             for i in range(0,count):
-                self.__hecklers.append( Heckler( kind ,  [ begin+i*gap ,self.gameInfo.HEIGHT_SIZE.value * self.heightIdx], direction, self.speed) )
+                self.__hecklers.append( Heckler(self.ctl,kind ,  [ begin+i*gap ,self.ctl.gameInfo.HEIGHT_SIZE.value * self.heightIdx], direction, self.speed) )
 
 
     def __getSoilHecklerKindRandomly(self):
@@ -74,8 +74,6 @@ class HecklerFactory(object):
         else:
             kind = Kind.CAR
         return kind
-
-
         
 
     def getHecklers(self):
@@ -83,14 +81,13 @@ class HecklerFactory(object):
 
 
 class Heckler(pygame.sprite.Sprite):
-    def __init__(self,name=Kind,position=[],direction=True,speed=int):
-
+    def __init__(self,controller=Controller.Controller, name=Kind,position=[],direction=True,speed=int):
+        self.ctl = controller
         self.speed = Speed[name.name].value+speed
         self.position = position
         self.direction = direction
         self.image = self.__loadImage(PATH[name],-1)
-
-        
+                
 
     def __loadImage(self,file_name=str, colorkey=False, image_directory='images'):
         
@@ -104,14 +101,19 @@ class Heckler(pygame.sprite.Sprite):
 
         return _image
 
+        
+    def getPosition(self,y=int):
+        return (self.position[0] , self.ctl.gameInfo.SCREEN_HEIGHT_SIZE.value - self.position[1] + self.ctl.getGapIdx()*self.ctl.gameInfo.HEIGHT_SIZE.value )
+
+
     def update(self,deltat):
         if(self.direction):
-            if self.position[0]-30 >= GameApp.GameInfo.WIDTH_COUNT.value*GameApp.GameInfo.WIDTH_SIZE.value:
+            if self.position[0]-30 >= self.ctl.gameInfo.WIDTH_COUNT.value*self.ctl.gameInfo.WIDTH_SIZE.value:
                 self.position[0] = 0
             self.position[0]+=self.speed
         else:
             if(self.position[0]+30<=0):
-                self.position[0] = GameApp.GameInfo.WIDTH_COUNT.value * GameApp.GameInfo.WIDTH_SIZE.value
+                self.position[0] = self.ctl.gameInfo.WIDTH_COUNT.value * self.ctl.gameInfo.WIDTH_SIZE.value
             self.position[0]-=self.speed
 
         
