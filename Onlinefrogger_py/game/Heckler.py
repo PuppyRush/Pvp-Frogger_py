@@ -51,15 +51,16 @@ class HecklerFactory(object):
             count = random.randrange(2,6)
             gap = self.ctl.gameInfo.SCREEN_WIDTH_SIZE.value/count
             for i in range(0,count):
-                self.__hecklers.append( Heckler(self.ctl,Kind.LOG , [ i*gap , self.ctl.gameInfo.HEIGHT_SIZE.value * self.heightIdx] , direction, self.speed) )
-               
-        elif self.mapKind == Map.MapEnum.LOAD :
+                self.__hecklers.append( Heckler(self.ctl,Kind.LOG , [ i*gap , self.ctl.gameInfo.HEIGHT_SIZE.value * self.heightIdx] , direction, self.speed,self.heightIdx) )
+                
+
+        elif self.mapKind == Map.MapEnum.ROAD :
             count = random.randrange(4,7)
             gap = self.ctl.gameInfo.SCREEN_WIDTH_SIZE.value/count
             kind = self.__getSoilHecklerKindRandomly() 
             begin = random.randrange(0,50)
             for i in range(0,count):
-                self.__hecklers.append( Heckler(self.ctl,kind ,  [ begin+i*gap ,self.ctl.gameInfo.HEIGHT_SIZE.value * self.heightIdx], direction, self.speed) )
+                self.__hecklers.append( Heckler(self.ctl,kind ,  [ begin+i*gap ,self.ctl.gameInfo.HEIGHT_SIZE.value * self.heightIdx], direction, self.speed,self.heightIdx) )
 
 
     def __getSoilHecklerKindRandomly(self):
@@ -80,20 +81,22 @@ class HecklerFactory(object):
 
 
 class Heckler(pygame.sprite.Sprite):
-    def __init__(self,controller=Controller.Controller, name=Kind,position=[],direction=True,speed=int):
+    def __init__(self,controller=Controller.Controller, name=Kind,position=[],direction=True,speed=int,heightIdx=int):
         self.ctl = controller
+        self.kind = name;
+        self.heightIdx = heightIdx-1
         self.speed = Speed[name.name].value+speed
         self.position = position
         self.direction = direction
-        self.image = self.__loadImage(PATH[name],-1)
-                
+        self.image = self.__loadImage(PATH[name])
+               
 
     def __loadImage(self,file_name=str, image_directory='images'):
         
         file = os.path.join(image_directory, file_name)
         _image = pygame.image.load(file)
-        #_image.set_colorkey((228,0,127))
-        #_image.convert_alpha()
+        _image.set_colorkey((228,0,127))
+        _image.convert_alpha()
 
         if not self.direction:
             _image = pygame.transform.flip(_image,True,False)
@@ -101,21 +104,25 @@ class Heckler(pygame.sprite.Sprite):
         return _image
 
         
-    def getPosition(self,y=int):
-        return (self.position[0] , self.ctl.gameInfo.SCREEN_HEIGHT_SIZE.value - self.position[1] + self.ctl.getGapIdx()*self.ctl.gameInfo.HEIGHT_SIZE.value )
+    def getPosition(self):
+        return (self.position[0] , self.ctl.gameInfo.SCREEN_HEIGHT_SIZE.value - self.position[1] + self.ctl.getGapIdx()*self.ctl.gameInfo.HEIGHT_SIZE.value - self.ctl.gameInfo.HEIGHT_SIZE.value)
 
 
     def update(self,deltat):
         if(self.direction):
             if self.position[0]-30 >= self.ctl.gameInfo.WIDTH_COUNT.value*self.ctl.gameInfo.WIDTH_SIZE.value:
-                self.position[0] = 0
+                self.position[0] = -self.speed
             self.position[0]+=self.speed
         else:
             if(self.position[0]+30<=0):
                 self.position[0] = self.ctl.gameInfo.WIDTH_COUNT.value * self.ctl.gameInfo.WIDTH_SIZE.value
             self.position[0]-=self.speed
 
-        
 
-        self.rect = self.image.get_rect()
-        self.rect.center = self.position
+    @staticmethod
+    def getPositionsOf(hecklers=[]):
+        p = []
+        for i in hecklers:
+            p.append(i.__position)
+
+        return p

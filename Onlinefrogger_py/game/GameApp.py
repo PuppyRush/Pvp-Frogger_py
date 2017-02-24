@@ -24,20 +24,20 @@ class GameInfo(Enum):
     HEIGHT_COUNT = 30
     WIDTH_SIZE = 30
     HEIGHT_SIZE = 30
+    FROG_SIZE = 15
     SCREEN_HEIGHT_SIZE = HEIGHT_COUNT * HEIGHT_SIZE
     SCREEN_WIDTH_SIZE = WIDTH_COUNT * WIDTH_SIZE
-
-
 
 BACKGROUND_COLOR = (255,255,255)
 
 CLOCK = pygame.time.Clock()
-DELTAT = CLOCK.tick(30)
+DELTAT = CLOCK.tick(20)
 
 SURFACE = pygame.display.set_mode((GameInfo.WIDTH_COUNT.value*GameInfo.WIDTH_SIZE.value, 
                                    GameInfo.HEIGHT_COUNT.value*GameInfo.HEIGHT_SIZE.value),DOUBLEBUF,32)
 SURFACE.fill(BACKGROUND_COLOR)
-#SURFACE.set_colorkey( (255,255,255,255) )
+#SURFACE.set_colorkey(BACKGROUND_COLOR )
+
 
 
 class GameApp(object):
@@ -73,6 +73,7 @@ class GameApp(object):
         self.hecklers = []    
         for i in self.map.earth:
             self.hecklers.append( Heckler.HecklerFactory(self.ctl, i.mapKind, i.heightIdx ,self.__speed).getHecklers())
+       
 
 
 def beginGameApp(playeres=[],level=int,speed=int):
@@ -90,13 +91,15 @@ def beginGameApp(playeres=[],level=int,speed=int):
     
     while True:
 
+        SURFACE.fill(BACKGROUND_COLOR)
+
         #preventing to full of queue
         pygame.event.get()
 
         for player in gameApp.players:
             player.updateKeyEvent(pygame.key.get_pressed())
 
-        for i in range(ctl.getLowerScreenIdx(), ctl.getUpperScreenIdx()):
+        for i in range(ctl.getLowerScreenIdx(), ctl.getUpperScreenIdx()-1):
 
             for l in range(0,GameInfo.WIDTH_COUNT.value):
                 if(gameApp.map.earth[i].mapKind == Map.MapEnum.ROCK):
@@ -104,19 +107,26 @@ def beginGameApp(playeres=[],level=int,speed=int):
                     if(gameApp.map.earth[i].rows[l] == Map.MapEnum.RIVER):
                         SURFACE.blit( gameApp.map.earth[i].waterImage, gameApp.map.getPosition(l,i) )
                     else:
+                        SURFACE.blit( gameApp.map.earth[i].waterImage, gameApp.map.getPosition(l,i) )
                         SURFACE.blit( gameApp.map.earth[i].image, gameApp.map.getPosition(l,i))
-                else:
+                else:    
                     SURFACE.blit( gameApp.map.earth[i].image , gameApp.map.getPosition(l,i))
             
+          
+            hecklers = gameApp.hecklers[i]
+            for l in hecklers:
+                SURFACE.blit( l.image, l.getPosition())
+                l.update(DELTAT)
+
+            for l in gameApp.players:
+                
+                l.isCollision(gameApp.hecklers[l.idx[1]])    
+                l.isFallinWater(gameApp.map.earth[l.idx[1]] )
+
             for l in gameApp.players:
                 l.update()
                 SURFACE.blit( l.image, l.getPosition(l,i))
 
-            hecklers = gameApp.hecklers[i]
-            for l in hecklers:
-                SURFACE.blit( l.image, l.getPosition(i))
-                l.update(DELTAT)
 
-        pygame.display.flip()
+        #pygame.display.flip()
         pygame.display.update()
-

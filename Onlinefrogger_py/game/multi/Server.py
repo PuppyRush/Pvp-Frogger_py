@@ -30,7 +30,6 @@ class TCPHandler(socketserver.BaseRequestHandler):
         
             game.multi.MessageParser.messageParser.load(temp)
 
-
         return super().handle()
 
 

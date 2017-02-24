@@ -3,7 +3,7 @@ import pygame
 import time
 import sched
 
-from game import GameApp as GA, Controller
+from game import GameApp as GA, Controller, Heckler, Map
 from enum import Enum
 
 class Order(Enum):
@@ -27,6 +27,9 @@ class Player(object):
         self.idx = idx
         self.position = coord
         self.jumpcount=0
+        
+        self.boardingDirection = False
+        self.isBoarding = False
         self.isMoving = False
         self.presentOrder = Order.UP
         
@@ -35,7 +38,7 @@ class Player(object):
         self.GAP=100
 
 
-        file = os.path.join("images", "frog.png")
+        file = os.path.join("images", "frog2.png")
         _image = pygame.image.load(file)
         _image.set_colorkey((228,0,127))
         _image.convert_alpha()
@@ -43,7 +46,7 @@ class Player(object):
         
 
     def getPosition(self,x=int, y=int):
-        return (self.position[0],  self.ctl.gameInfo.SCREEN_HEIGHT_SIZE.value + self.ctl.gameInfo.HEIGHT_SIZE.value*self.ctl.getGapIdx() - self.position[1])
+        return [self.position[0]+5,  self.ctl.gameInfo.SCREEN_HEIGHT_SIZE.value + self.ctl.gameInfo.HEIGHT_SIZE.value*self.ctl.getGapIdx() - self.position[1]+5]
         
     def updateKeyEvent(self,press=list):
         
@@ -72,12 +75,12 @@ class Player(object):
         
     def __move(self,order=Order):
         
-        if not self.isValidMoving(order):
+        if not self.__isValidMoving(order):
             return Order.NONE
 
         if not self.isMoving:    
 
-            self.setPosition(order)
+            self.__setPosition(order)
 
             self.isMoving = True
             self.now = 0
@@ -88,7 +91,7 @@ class Player(object):
         return Order.NONE
 
 
-    def setPosition(self,order=Order):
+    def __setPosition(self,order=Order):
         if order == Order.LEFT:
             self.idx[0]-=1
         elif order == Order.RIGHT:
@@ -104,7 +107,7 @@ class Player(object):
             print("error")
 
 
-    def isValidMoving(self,order=Order):
+    def __isValidMoving(self,order=Order):
         if order == Order.LEFT :
             if self.idx[0]==0:
                 return False
@@ -158,6 +161,12 @@ class Player(object):
 
     def update(self):
        
+        if self.isBoarding:
+            if self.boardingDirection:
+                self.position[0]+=  Heckler.Speed[Heckler.Kind.LOG.name].value/30
+            else:
+                self.position[0]-=  Heckler.Speed[Heckler.Kind.LOG.name].value/30
+
         if self.isMoving:
             if(self.presentOrder == Order.UP):
                 self.position[1] += self.playerSpeed
@@ -172,3 +181,57 @@ class Player(object):
             if(self.now >= self.GAP):
                 self.isMoving = False
                 self.now = 0
+
+    def isCollision(self, hecklers=[]):
+             
+        if(len(hecklers)!=0):
+                        
+            if(hecklers[0].kind != Heckler.Kind.LOG):
+                self.isBoarding = False
+
+                for heckler in hecklers:
+                    pass
+                    #h_pos = heckler.getPosition( self.idx[1])
+                    #frog_width = GA.GameInfo.FROG_SIZE.value
+                    #heckler_width = GA.GameInfo.WIDTH_SIZE.value
+
+                    #if(h_pos[0] < self.position[0] ):
+                    #    if h_pos[0]+heckler_width > self.position[0]:
+                    #        print("l_col")
+                    #elif h_pos[0] > self.position[0]:
+                    #    if h_pos[0] < self.position[0]+frog_width:
+                    #        print("r_col")
+                                  
+            else:
+                logCollision = False
+                for heckler in hecklers:
+
+                    h_pos = heckler.getPosition()
+                    frog_width = GA.GameInfo.FROG_SIZE.value
+                    heckler_width = GA.GameInfo.WIDTH_SIZE.value
+
+                    if(h_pos[0] < self.position[0] ):
+                        if h_pos[0]+heckler_width > self.position[0]:
+                            logCollision = True
+                           
+                    elif h_pos[0] > self.position[0]:
+                        if h_pos[0] < self.position[0]+frog_width:
+                            logCollision = True
+    
+                    if logCollision:
+                        #self.position =  [heckler.getPosition()[0],self.getPosition(0, heckler.heightIdx)[1]]
+                        self.isBoarding = True
+                        self.boardingDirection = True if heckler.direction == True else False
+                        break
+
+                if not logCollision:
+                    self.isBoarding = False
+                    
+                    
+    def isFallinWater(self,map=Map):
+
+        for m in map.rows: 
+            if m == Map.MapEnum.RIVER:
+                if not self.isBoarding:
+                    pass
+        
