@@ -35,4 +35,4 @@ nickname = ""
 players = [(1,"asd"),(2,"sd")]
          
 
-game.GameApp.beginGameApp(players,3,0)
+game.GameApp.beginServerGameApp(players,3,0)

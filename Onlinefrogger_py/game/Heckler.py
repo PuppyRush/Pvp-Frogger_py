@@ -51,7 +51,8 @@ class HecklerFactory(object):
             count = random.randrange(2,6)
             gap = self.ctl.gameInfo.SCREEN_WIDTH_SIZE.value/count
             for i in range(0,count):
-                self.__hecklers.append( Heckler(self.ctl,Kind.LOG , [ i*gap , self.ctl.gameInfo.HEIGHT_SIZE.value * self.heightIdx] , direction, self.speed,self.heightIdx) )
+                self.__hecklers.append( Heckler(self.ctl,Kind.LOG , 
+            [ i*gap , self.ctl.gameInfo.HEIGHT_SIZE.value * self.heightIdx] , direction, self.speed,self.heightIdx) )
                 
 
         elif self.mapKind == Map.MapEnum.ROAD :

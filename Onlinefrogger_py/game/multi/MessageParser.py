@@ -1,57 +1,55 @@
 import threading
 import queue
+import enum
 
 HEADER, BODY = 0,1
-GUI , NETWORK, GAME = 0,1,2
+
+class MessageKind(enum.Enum):
+    GUI = 0
+    NETWORK = 1
+    GAME = 2
+
+class GameKind(enum.Enum):
+    SEND_MAP=1
+    SEND_PLAYERS=2
+    SEND_HECKLERS=3
 
 class Message(object):
     def __init__(self):
         self.header = 0
         self.body = object
 
-
-
-class MessageParser(threading.Thread):
+class MessageParser(object):
     
-    def init(self):
-        self.messageQ = queue.Queue
-        self.guiQ = queue.Queue
-        self.networkQ = queue.Queue
-        self.gameQ = queue.Queue
+    def __init__(self):
+        self.__messageQ = queue.Queue
+        self.__guiQ = queue.Queue
+        self.__networkQ = queue.Queue
+        self.__gameQ = queue.Queue
         
-
-    def run(self):
-        while(True):
-            self.commandParser()
-
-    
-    def load(self,data):
+    def loader(self,data):
         msg = Message()
         msg.header = data.header
         msg.body = data.body    
 
-        self.message.put(msg)
+        self.__messageQ.put(msg)
+
             
-    def commandParser(self):
-        if(self.messageQ.qsize==0):
-            return
+    def getGuiMessage(self):
+        if self.__guiQ.empty():
+            return False
         else:
-            data = self.messageQ.get()
+            return self.__guiQ.get()
         
-            if(data.header ==GAME):
-                self.gameQ.put(data.body)
-            elif(data.header == GUI):
-                self.guiQ.put(data.body)
-            elif(data.header == NETWORK):
-                self.networkQ.put(data.body)
-            
-             
-        
-        
-    
+    def getGameMessage(self):
+        if self.__gameQ.empty():
+            return False
+        else:
+            return self.__gameQ.get()
 
-messageParser = MessageParser()
+    def getNetworkMessage(self):
+        if self.__networkQ.empty():
+            return False
+        else:
+            return self.__networkQ.get()
 
-def beginMessageParser():
-    messageParser.init()
-    messageParser.start()

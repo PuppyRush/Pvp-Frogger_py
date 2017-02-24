@@ -76,7 +76,7 @@ class GameApp(object):
        
 
 
-def beginGameApp(playeres=[],level=int,speed=int):
+def beginServerGameApp(playeres=[],level=int,speed=int):
     
     
     pygame.init()
@@ -130,3 +130,8 @@ def beginGameApp(playeres=[],level=int,speed=int):
 
         #pygame.display.flip()
         pygame.display.update()
+
+
+def beginClientGameApp():
+
+    pass
