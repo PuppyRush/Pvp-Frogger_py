@@ -1,18 +1,16 @@
 #import turtle
 import sys
 import pygame
-import math
-import threading
 import time
 import game
-import queue
 import enum
 import random
 from random import Random
 from enum import Enum
-from itertools import chain
 from pygame.locals import *
+
 from game import Player, Heckler, Map, Controller
+from game.multi import Message , Server, MessagePacker
 
 if not pygame.font: print("Warning, fonts disabled")
 if not pygame.mixer: print("Warning, sound disabled")
@@ -31,7 +29,8 @@ class GameInfo(Enum):
 BACKGROUND_COLOR = (255,255,255)
 
 CLOCK = pygame.time.Clock()
-DELTAT = CLOCK.tick(20)
+TICK = 30
+DELTAT = CLOCK.tick(TICK)
 
 SURFACE = pygame.display.set_mode((GameInfo.WIDTH_COUNT.value*GameInfo.WIDTH_SIZE.value, 
                                    GameInfo.HEIGHT_COUNT.value*GameInfo.HEIGHT_SIZE.value),DOUBLEBUF,32)
@@ -76,7 +75,7 @@ class GameApp(object):
        
 
 
-def beginServerGameApp(playeres=[],level=int,speed=int):
+def beginServerGameApp(playeres=[],level=int,speed=int,serverSocket=Server):
     
     
     pygame.init()
@@ -112,6 +111,7 @@ def beginServerGameApp(playeres=[],level=int,speed=int):
                 else:    
                     SURFACE.blit( gameApp.map.earth[i].image , gameApp.map.getPosition(l,i))
             
+
           
             hecklers = gameApp.hecklers[i]
             for l in hecklers:
@@ -126,11 +126,16 @@ def beginServerGameApp(playeres=[],level=int,speed=int):
             for l in gameApp.players:
                 l.update()
                 SURFACE.blit( l.image, l.getPosition(l,i))
-
-
-        #pygame.display.flip()
+        
         pygame.display.update()
 
+        my = gameApp.players[0]
+        myFrog = Message.Player(Message.MessageKind.PLAYER, my.position, my.jumpcount, my.nickname, my.frogNumber)
+        gameInfoMsg = Message.GameInfo(Message.MessageKind.GAMEINFO,maxHeightCount,TICK)
+        mapMsg = Message.Map(Message.MessageKind.MAP,gameApp.map.earth,ctl.getLowerScreenIdx(),ctl.getUpperScreenIdx(),GameInfo.HEIGHT_COUNT.value)
+        hecklerMsg =  Message.Heckler(Message.MessageKind.HECKLER,gameApp.hecklers,ctl.getLowerScreenIdx(), ctl.getUpperScreenIdx(),GameInfo.HEIGHT_COUNT.value)
+
+        serverSocket.putMessage(myFrog, MessagePacker.MessageKind.GAME)
 
 def beginClientGameApp():
 

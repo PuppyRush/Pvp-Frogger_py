@@ -1,5 +1,5 @@
 import os
-import pygame
+import enum
 import game
 from game import GameApp as GA, Controller
 from enum import Enum

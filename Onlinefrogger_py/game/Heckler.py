@@ -1,12 +1,11 @@
 import os
 import pygame
 import game
+import enum
 import random
 from enum import Enum
-from game import Map,GameApp as GA, Controller
+from game import Map ,GameApp as GA, Controller
 from pygame import sprite
-from threading import Timer
-
 
 
 

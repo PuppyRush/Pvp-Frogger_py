@@ -1,8 +1,7 @@
 import os
 import pygame
 import time
-import sched
-
+import game
 from game import GameApp as GA, Controller, Heckler, Map
 from enum import Enum
 

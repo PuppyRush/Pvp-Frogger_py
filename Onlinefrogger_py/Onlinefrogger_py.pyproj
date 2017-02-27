@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>aef522cd-421b-47e7-a660-5828a1f63a4e</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>Onlinefrogger_py.py</StartupFile>
+    <StartupFile>game\multi\Server.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -35,6 +35,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="game\multi\Client.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="game\multi\Message.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="game\multi\MessagePacker.py">

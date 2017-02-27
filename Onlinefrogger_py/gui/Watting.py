@@ -6,6 +6,7 @@
 #
 # WARNING! All changes made in this file will be lost!
 
+import PyQt5
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 import threading
@@ -36,38 +37,41 @@ class EventedQPushButton(QtWidgets.QPushButton):
         QtCore.QThread
     def mousePressEvent(self, QMouseEvent):
 
-        if(self.objectName == "beginButton"):
+        if(self.objectName() == "beginButton"):
             ui.closeWidget()
 
         return super().mousePressEvent(QMouseEvent)
 
 
-class Ui_Dialog(QtWidgets.QDialog):
+class Ui_Dialog(object):
 
-    def __init__(self):
-        QtWidgets.QDialog.__init__(self)
-        self.setModal(False)
+    def setupUi(self, dialog):
         
+                
         self.wattingContext = "상대방의 접속을 대기중입니다"
         self.postfix = ""
         
-        self.setObjectName("Dialog")
-        self.resize(200, 146)
-        self.setMaximumSize(QtCore.QSize(200, 150))
-        self.connectingEdit = QtWidgets.QLineEdit(self)
+        dialog.setObjectName("Dialog")
+        dialog.resize(200, 146)
+        dialog.setMaximumSize(QtCore.QSize(200, 150))
+
+        self.connectingEdit = QtWidgets.QLineEdit(dialog)
         self.connectingEdit.setGeometry(QtCore.QRect(0, 50, 201, 20))
         self.connectingEdit.setObjectName("connectingEdit")
-        self.beginButton = QtWidgets.QPushButton(self)
+        self.beginButton = EventedQPushButton(dialog)
         self.beginButton.setGeometry(QtCore.QRect(60, 110, 75, 23))
         self.beginButton.setObjectName("beginButton")
         self.beginButton.setEnabled(False)
 
-        self.retranslateUi()
-        QtCore.QMetaObject.connectSlotsByName(self)
+        self.retranslateUi(dialog)
+        QtCore.QMetaObject.connectSlotsByName(dialog)
 
-    def retranslateUi(self):
+    def closeWidget(self):
+        dialog.close()
+
+    def retranslateUi(self,dialog):
         _translate = QtCore.QCoreApplication.translate
-        self.setWindowTitle(_translate("Dialog", "Dialog"))
+        dialog.setWindowTitle(_translate("Dialog", "Dialog"))
         self.connectingEdit.setText(_translate("Dialog", self.wattingContext))
         self.beginButton.setText(_translate("Dialog", "대기중"))
 
@@ -76,14 +80,17 @@ class Ui_Dialog(QtWidgets.QDialog):
 import sys
 app = QtWidgets.QApplication(sys.argv)
 wattingThread = WattingThread()
+
+dialog = QtWidgets.QDialog()
 ui = Ui_Dialog()
+ui.setupUi(dialog)
 
 def beginUI():
  
     wattingThread.isConnect = False
     wattingThread.start()
   
-    ui.show()
+    dialog.show()
     app.exec_()
     
 

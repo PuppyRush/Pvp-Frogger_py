@@ -4,17 +4,15 @@ import queue
 import game.multi.Client
 import enum
 
-HEADER, BODY = 0,1
-
 class MessageKind(enum.Enum):
     GUI = 0
     NETWORK = 1
     GAME = 2
 
 class Message(object):
-    def __init__(self):
-        self.header = 0
-        self.body = object
+    def __init__(self,header=MessageKind, body=object):
+        self.header = header
+        self.body = body
 
 
 
@@ -38,3 +36,6 @@ class MessagePacker(object):
             return False
         else:
             return self.__messageQ.get()
+
+    def empty(self):
+        return self.__messageQ.empty()
