@@ -7,7 +7,7 @@ from gui import Main, Watting, Server
 
 import init
 
-initInfo = init.InitInfo()
+#initInfo = init.InitInfo()
 
 isServer = True
 ip = ""
@@ -27,6 +27,8 @@ if(isServer):
     gui.Watting.beginUI()
 
     clientFrogNickname = serverSocket.resolveRequestedPlayerInfo()
+
+    players = [[1,"PuppyRush"],[2,clientFrogNickname]]
 
     game.GameApp.beginServerGameApp(players,3,0,serverSocket)
 

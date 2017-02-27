@@ -3,37 +3,37 @@ import socketserver
 import threading
 import pickle
 import game
-
+import gui
 from game.multi import MessagePacker as Packer, MessageParser as Parser, Message
 
 PORT = 31500
 
 class TCPHandler(socketserver.BaseRequestHandler):
 
-    def __init__(self):
-        self.packer = Packer.Packer()
-        self.parser = Parser.Parser()
+    def init(self,packer=Packer.MessagePacker,parser=Parser.MessageParser):
+        self.__packer = packer
+        self.__parser = parser
+
 
     def putMessage(self,body=object,kind=Packer.MessageKind):    
-        self.packer.packingMessage(body,kind)
+        self.__packer.packingMessage(body,kind)
 
     def getMessage(self,kind=Packer.MessageKind):
         if kind == Packer.MessageKind.GAME:
-            return self.parser.getGameMessage()
+            return self.__parser.getGameMessage()
         elif kind == Packer.MessageKind.GUI:
-            return self.parser.getGuiMessage()
+            return self.__parser.getGuiMessage()
         elif kind == Packer.MessageKind.NETWORK:
-            return self.parser.getNetworkMessage()
+            return self.__parser.getNetworkMessage()
         else:
             print("not exist message kind")
             return False
 
 
     def handle(self):
-        
         self.__setup()
         self.__requestPlayerInfo()
-
+        
         while(True):
             self.__sendMessage()
             self.__recvMessage()         
@@ -41,24 +41,24 @@ class TCPHandler(socketserver.BaseRequestHandler):
         return super().handle()
 
     def getPakcer(self):
-        return self.packer
+        return self.__packer
 
     def getParser(self):
-        return self.parser
+        return self.__parser
 
     def __setup(self):
-            
+        
         str = "%s가 접속하였습니다" % (self.client_address[0] )
         gui.Watting.wattingThread.isConnect = True
         gui.Watting.ui.connectingEdit.setText(str);
         gui.Watting.ui.beginButton.setText("시작하기")  
         gui.Watting.ui.beginButton.setEnabled(True)
-        
+              
         return super().setup()
 
 
     def __sendMessage(self):
-        data = self.packer.getMessage()
+        data = self.__packer.getMessage()
         if type(data) != bool:
             self.request.send( pickle.dumps( data ))
             
@@ -68,7 +68,7 @@ class TCPHandler(socketserver.BaseRequestHandler):
             return
 
         temp = pickle.loads(data) 
-        self.parser.loader(temp)
+        self.__parser.loader(temp)
         
     def __requestPlayerInfo(self):
         playerInfo = Message.Message(Message.MessageKind.PLAYER_INFO)
@@ -78,18 +78,23 @@ class TCPHandler(socketserver.BaseRequestHandler):
 
 class FroggerServer(threading.Thread):
     
-    def init(self,ip,nickname):
+    def init(self,ip,nickname):            
+
+                
+
         self.serverIp = ip
         self.serverPort = PORT
         self.nickname = nickname
 
         tuple = (self.serverIp,self.serverPort)               
         self.tcpHandler = TCPHandler
-        self.__serverSocket = socketserver.TCPServer(tuple,self.tcpHandler)
+        self.tcpHandler.init(self.tcpHandler,Packer.MessagePacker(),Parser.MessageParser())
+        self.serverSocket = socketserver.TCPServer(tuple,self.tcpHandler)
         
     def run(self):
-        self.__serverSocket.serve_forever()
-           
+        self.serverSocket.serve_forever()
+        self.tcpHandler.handle(self.tcpHandler)
+        
     def putMessage(self,body=object,kind=Packer.MessageKind):    
         self.tcpHandler.putMessage(self.tcpHandler, body,kind)
     
@@ -108,7 +113,7 @@ class FroggerServer(threading.Thread):
             msg = self.getMessage(Packer.MessageKind.GAME)
             if type(msg) != bool:
                 if msg.header == Message.MessageKind.PLAYER_INFO:
-                    return msg.body.nickname
+                    return msg.nickname
                 else:
                     self.putMessage(msg,Packer.MessageKind.GAME)
 

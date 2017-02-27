@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>aef522cd-421b-47e7-a660-5828a1f63a4e</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>game\multi\Server.py</StartupFile>
+    <StartupFile>Onlinefrogger_py.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>

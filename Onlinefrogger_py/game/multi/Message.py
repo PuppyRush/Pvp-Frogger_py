@@ -8,13 +8,12 @@ class MessageKind(enum.Enum):
     PLAYER_INFO=5
     
 class Message(object):
-    def __init__(self,msgKind=MessageKind,body=object):
-        self.msgKind=msgKind
-        self.body=object
+    def __init__(self,msgKind=MessageKind):
+        self.header=msgKind
 
 class Heckler(Message):
     def __init__(self,msgKind=MessageKind, hecklers=[],beginIdx=int,endIdx=int,screenHeightCount=int):
-        super(msgKind)
+        super().__init__(msgKind)
         
         self.heightSize = screenHeightCount
         self.hecklers = []
@@ -25,7 +24,7 @@ class Heckler(Message):
 
 class Map(Message):
     def __init__(self,msgKind=MessageKind,mapRows=[],beginIdx=int,endIdx=int,screenHeightCount=int):
-        super(msgKind)
+        super().__init__(msgKind)
         self.mapSize = screenHeightCount
         self.map = []
         
@@ -35,14 +34,14 @@ class Map(Message):
 
 class Player(Message):
     def __init__(self,msgKind=MessageKind,position=[],jumpCount=0,):
-        super(msgKind)
+        super().__init__(msgKind)
         self.position = ()
         self.jumpCount = jumpCount
 
 
 class GameInfo(Message):
     def __init__(self,msgKind=MessageKind,gameInfo=object,heightMax=int,clockTick=int):
-        super(msgKind)
+        super().__init__(msgKind)
         self.widthCount=gameInfo.WIDTH_COUNT.value
         self.heightCount=gameInfo.HEIGHT_COUNT.value
         self.widthSize=gameInfo.WIDTH_COUNT.value
@@ -54,5 +53,6 @@ class GameInfo(Message):
         self.clockTick=clockTick
 
 class PlayerInfo(Message):
-    def __int__(self,msgKind=MessageKind,name=str):
+    def __init__(self,msgKind=MessageKind,name=str):
+        super().__init__(msgKind)
         self.nickname = name

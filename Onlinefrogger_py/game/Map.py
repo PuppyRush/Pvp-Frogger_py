@@ -1,6 +1,7 @@
 import os
 import enum
 import game
+import pygame
 from game import GameApp as GA, Controller
 from enum import Enum
 import random

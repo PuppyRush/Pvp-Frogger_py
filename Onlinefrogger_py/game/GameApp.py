@@ -55,10 +55,10 @@ class GameApp(object):
 
         self.players = []
         order =0
-        for i in players:
+        for player in players:
             x = int((order+1)*GameInfo.WIDTH_COUNT.value/(len(players)+1))
             y = 0
-            self.players.append( game.Player.Player(self.ctl,i[0], i[1], 
+            self.players.append( game.Player.Player(self.ctl,player[0], player[1], 
                                                     [ (order+1)*self.__GAP_OF_FROG, GameInfo.HEIGHT_COUNT.value], 
                                                     [ x,y ]) )
             order+=1
