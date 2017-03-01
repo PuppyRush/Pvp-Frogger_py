@@ -10,7 +10,7 @@ class MessageParser(object):
         self.__networkQ = queue.Queue()
         self.__gameQ = queue.Queue()
         
-    def loader(self,data):
+    def loader(self,data=object):
         msg = MessagePacker.Message()
         msg.header = data.header
         msg.body = data.body    

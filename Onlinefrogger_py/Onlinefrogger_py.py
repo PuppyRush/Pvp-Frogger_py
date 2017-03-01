@@ -13,7 +13,6 @@ isServer = True
 ip = ""
 nickname = ""
 
-
 isServer, nickname, ip = gui.Main.beginUI("localhost")
 
 if(isServer):
@@ -26,7 +25,7 @@ if(isServer):
     serverSocket = game.multi.Server.beginServerSocket(ip,nickname)      
     gui.Watting.beginUI()
 
-    clientFrogNickname = serverSocket.resolveRequestedPlayerInfo()
+    clientFrogNickname = serverSocket.recvPlayerInfo()
 
     players = [[1,"PuppyRush"],[2,clientFrogNickname]]
 
@@ -34,8 +33,5 @@ if(isServer):
 
 else:
     clientSocket = game.multi.Client.beginClientSocket(ip,nickname)
-
-
-players = [(1,"asd"),(2,"sd")]
-         
+    game.GameApp.beginClientGameApp(clientSocket)
 

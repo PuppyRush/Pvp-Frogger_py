@@ -1,8 +1,10 @@
-import socket, sys
+import socket
+import sys
 import pickle
 import threading
 import queue
 import game
+import select
 from game.multi import MessagePacker, MessageParser, Message
 
 
@@ -14,17 +16,25 @@ class FroggerClient(threading.Thread):
         self.serverIp = ip
         self.serverPort = PORT
         self.nickname = nickname
-        self.clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.clientSocket.connect( (self.serverIp, PORT))
-        
+
         self.__packer = MessagePacker.MessagePacker()
         self.__parser = MessageParser.MessageParser()
 
+
+        self.clientSocket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        self.clientSocket.connect((self.serverIp,self.serverPort))                
+        self.__sendClientInfo()
+
     def run(self):
         while(True):
+            read, write,error = select.select([self.clientSocket],[],[],10)
+
+            for sock in read:
+                if sock == self.clientSocket:
+                    self.__recvMessage(sock)
+
             self.__sendMessage()
-            self.__recvMessage()
-            self.__resolveRequestedInfo()
+
 
     def putMessage(self,body=object,kind=object):    
         self.__packer.packingMessage(data,kind)
@@ -42,24 +52,26 @@ class FroggerClient(threading.Thread):
             print("not exist message kind")
             return False  
 
-    def __resolveRequestedInfo(self):
-        if not self.__parser.empty(MessagePacker.MessageKind.GAME):
-            msg = Message.PlayerInfo(Message.MessageKind.PLAYER_INFO, self.nickname)
-            self.__packer.packingMessage(msg,MessagePacker.MessageKind.GAME)
+    def getPacker(self):
+        return self.__packer
+
+    def getParser(self):
+        return self.__parser
+
+    def __sendClientInfo(self):
+        msg = Message.PlayerInfo(Message.MessageKind.PLAYER_INFO, self.nickname)
+        self.__packer.packingMessage(msg,MessagePacker.MessageKind.GAME)
            
+    def __recvMessage(self,sock):
+        data = sock.recv(2048)
+        if len(data)>0 :
+            self.__parser.loader(pickle.loads(data))
 
     def __sendMessage(self):
-        
         if not self.__packer.empty():
             self.clientSocket.send( pickle.dumps( self.__packer.getMessage() ))
             
-    def __recvMessage(self):
-        data = self.clientSocket.recv(1024)
 
-        if len(data)<=0 :
-            return
-        self.__parser.loader(pickle.loads(data))
-        
 
 def beginClientSocket(ip,nickname):
     client = FroggerClient()
